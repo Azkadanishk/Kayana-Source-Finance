@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayana Source Finance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #080c14; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .hidden { display: none !important; }
+        
+        input, select { background: #111827 !important; border: 1px solid #1f2937 !important; padding: 16px; border-radius: 20px; color: white; outline: none; transition: 0.3s; width: 100%; font-weight: 600; }
+        input:focus { border-color: #3b82f6 !important; box-shadow: 0 0 25px rgba(59, 130, 246, 0.15); }
+        
+        .btn-primary { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); transition: 0.3s; cursor: pointer; box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4); }
+        .btn-primary:active { transform: scale(0.96); }
+
+        .nav-link { cursor: pointer; padding: 16px; border-radius: 20px; color: #64748b; transition: 0.3s; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .nav-active { background: rgba(59, 130, 246, 0.1) !important; color: #60a5fa !important; border: 1px solid rgba(59, 130, 246, 0.2); }
+        
+        .tab-content { opacity: 0; transform: translateY(10px); transition: all 0.4s ease; display: none; }
+        .active-content { display: block !important; opacity: 1; transform: translateY(0); }
+        
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); transition: 0.3s; }
+        .btn-danger:hover { background: #ef4444; color: white; }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <div id="login-page" class="flex min-h-screen items-center justify-center hidden p-4">
+        <div class="glass p-12 md:p-20 rounded-[50px] text-center w-full max-w-xl">
+            <h1 class="text-7xl font-black tracking-tighter text-blue-500 mb-2 italic">KAYANA FINANCE</h1>
+            <p class="text-slate-500 mb-12 text-sm uppercase tracking-[0.4em]">Intelligence Finance</p>
+            <button id="btn-login-google" class="w-full flex items-center justify-center gap-4 bg-white text-black font-black py-5 px-8 rounded-2xl hover:bg-slate-100 transition-all active:scale-95">
+                CONNECT ACCOUNT
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard-page" class="hidden">
+        <header class="max-w-6xl mx-auto flex justify-between items-center p-8">
+            <div>
+                <h1 class="text-2xl font-black text-white tracking-tighter uppercase">Kayana Finance</h1>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest" id="user-display-name">...</p>
+            </div>
+            <button id="btn-logout" class="text-xs font-bold text-slate-500 hover:text-red-400 transition uppercase tracking-widest">Logout</button>
+        </header>
+
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 px-6">
+            <aside class="md:col-span-3 space-y-6">
+                <nav class="flex flex-col gap-3">
+                    <div id="nav-pencatatan" class="nav-link nav-active" onclick="switchTab('pencatatan')"><span>📥</span> Input Data</div>
+                    <div id="nav-history" class="nav-link" onclick="switchTab('history')"><span>📑</span> History & Balance</div>
+                </nav>
+                <hr class="border-white/5 mx-4">
+                <div class="px-2">
+                    <button id="btn-reset-data" class="btn-danger w-full py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest">Reset All Data</button>
+                </div>
+            </aside>
+
+            <main class="md:col-span-9">
+                <section id="sec-pencatatan" class="tab-content active-content space-y-8">
+                    <div class="glass p-10 rounded-[40px]">
+                        <h2 class="text-3xl font-black mb-10 tracking-tight text-white">Entry Transaksi</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Jenis Arus</label>
+                                <select id="trans-type">
+                                    <option value="income">Income (+)</option>
+                                    <option value="expense" selected>Expense (-)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Pilih Kategori</label>
+                                <select id="trans-category"></select>
+                            </div>
+                        </div>
+
+                        <div id="custom-cat-container" class="hidden mt-6 space-y-2">
+                            <label class="text-[10px] font-bold text-blue-500 uppercase ml-2 tracking-widest">Nama Kategori Kustom</label>
+                            <input type="text" id="custom-category" placeholder="Contoh: Beli Kopi, Bayar Hutang, dll" class="border-blue-500/30">
+                        </div>
+
+                        <div class="mt-8 space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Total Nominal</label>
+                            <input type="number" id="trans-amount" placeholder="0" class="text-4xl font-black text-blue-500">
+                        </div>
+                        <button id="btn-save" class="btn-primary w-full py-6 rounded-3xl font-black text-xl mt-10 uppercase tracking-widest text-white">SIMPAN DATA</button>
+                    </div>
+                </section>
+
+                <section id="sec-history" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-black">
+                        <div class="glass p-8 rounded-3xl border-l-4 border-green-500"><p class="text-[10px] text-slate-500 uppercase mb-2">Total In</p><h3 id="total-in" class="text-2xl text-green-400">Rp 0</h3></div>
+                        <div class="glass p-8 rounded-3xl border-l-4 border-red-500"><p class="text-[10px] text-slate-500 uppercase mb-2">Total Out</p><h3 id="total-out" class="text-2xl text-red-400">Rp 0</h3></div>
+                        <div class="glass p-8 rounded-3xl border-l-4 border-blue-500"><p class="text-[10px] text-slate-500 uppercase mb-2">Balance</p><h3 id="total-balance" class="text-2xl text-blue-400">Rp 0</h3></div>
+                    </div>
+                    <div class="glass rounded-[40px] overflow-hidden">
+                        <div id="history-list" class="max-h-[600px] overflow-y-auto divide-y divide-white/5"></div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyASOgZs7hB5d3bp6E2jBE3qs--byvDbhOg",
+            authDomain: "kayana-finance.firebaseapp.com",
+            projectId: "kayana-finance",
+            storageBucket: "kayana-finance.firebasestorage.app",
+            messagingSenderId: "838996163387",
+            appId: "1:838996163387:web:707574eb85811bcd12d51e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        const categories = {
+            income: ['Gaji', 'Project', 'Investasi', 'Hibah', 'Lainnya'],
+            expense: ['Makan', 'Transport', 'Lifestyle', 'Tagihan', 'Belanja', 'Edukasi', 'Kesehatan', 'Lainnya']
+        };
+
+        const typeSelect = document.getElementById('trans-type');
+        const catSelect = document.getElementById('trans-category');
+        const customContainer = document.getElementById('custom-cat-container');
+        const customInput = document.getElementById('custom-category');
+
+        const updateCats = () => {
+            const type = typeSelect.value;
+            catSelect.innerHTML = categories[type].map(c => `<option value="${c}">${c}</option>`).join('');
+            checkCustomStatus();
+        };
+
+        const checkCustomStatus = () => {
+            if (catSelect.value === 'Lainnya') {
+                customContainer.classList.remove('hidden');
+                customInput.focus();
+            } else {
+                customContainer.classList.add('hidden');
+                customInput.value = "";
+            }
+        };
+
+        typeSelect.onchange = updateCats;
+        catSelect.onchange = checkCustomStatus;
+        updateCats();
+
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('login-page').classList.toggle('hidden', user);
+            document.getElementById('dashboard-page').classList.toggle('hidden', !user);
+            if(user) {
+                document.getElementById('user-display-name').innerText = user.displayName.toUpperCase();
+                renderHistory();
+            }
+        });
+
+        document.getElementById('btn-login-google').onclick = () => signInWithPopup(auth, provider);
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active-content'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('nav-active'));
+            document.getElementById(`nav-${tab}`).classList.add('nav-active');
+            document.getElementById(`sec-${tab}`).classList.add('active-content');
+            if(tab === 'history') renderHistory();
+        };
+
+        async function renderHistory() {
+            if (!auth.currentUser) return;
+            const snap = await getDocs(query(collection(db, "transactions"), where("uid", "==", auth.currentUser.uid), orderBy("createdAt", "desc")));
+            let html = "", tin = 0, tout = 0;
+            
+            snap.forEach(doc => {
+                const d = doc.data();
+                const isIn = d.type === 'income';
+                if(isIn) tin += d.amount; else tout += d.amount;
+                html += `<div class="flex justify-between p-7 hover:bg-white/[0.02] transition">
+                    <div><div class="font-black text-lg">${d.category}</div><div class="text-[10px] text-slate-600 uppercase font-bold">${d.createdAt?.toDate().toLocaleDateString('id-ID')}</div></div>
+                    <div class="text-right font-black text-lg ${isIn ? 'text-green-400' : 'text-red-400'}">${isIn ? '+' : '-'} Rp ${d.amount.toLocaleString('id-ID')}</div>
+                </div>`;
+            });
+            
+            document.getElementById('history-list').innerHTML = html || '<p class="p-20 text-center opacity-20 font-bold uppercase tracking-widest">No Transactions Found</p>';
+            document.getElementById('total-in').innerText = `Rp ${tin.toLocaleString('id-ID')}`;
+            document.getElementById('total-out').innerText = `Rp ${tout.toLocaleString('id-ID')}`;
+            document.getElementById('total-balance').innerText = `Rp ${(tin - tout).toLocaleString('id-ID')}`;
+        }
+
+        document.getElementById('btn-save').onclick = async () => {
+            const amt = document.getElementById('trans-amount').value;
+            if (!amt) return alert("Isi nominalnya dulu, Bro!");
+
+            let finalCategory = catSelect.value;
+            if (finalCategory === 'Lainnya') {
+                finalCategory = customInput.value.trim() || 'Lainnya';
+            }
+
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true; btn.innerText = "SAVING...";
+            
+            try {
+                await addDoc(collection(db, "transactions"), {
+                    uid: auth.currentUser.uid, 
+                    type: typeSelect.value,
+                    category: finalCategory, 
+                    amount: Number(amt), 
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('trans-amount').value = "";
+                customInput.value = "";
+                updateCats();
+                btn.disabled = false; btn.innerText = "SIMPAN DATA";
+                alert("Data Berhasil Disimpan! 🚀");
+            } catch(e) { 
+                alert("Gagal simpan data.");
+                btn.disabled = false; btn.innerText = "SIMPAN DATA";
+            }
+        };
+
+        document.getElementById('btn-reset-data').onclick = async () => {
+            if (!confirm("⚠ Hapus semua data?")) return;
+            if (!confirm("⚠ SERIUS? Data gak bisa balik lagi!")) return;
+            const q = query(collection(db, "transactions"), where("uid", "==", auth.currentUser.uid));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach((d) => batch.delete(d.ref));
+            await batch.commit();
+            alert("Database dibersihkan!");
+            location.reload();
+        };
+    </script>
+</body>
+</html>
